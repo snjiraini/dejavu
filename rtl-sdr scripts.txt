@@ -1,0 +1,2 @@
+rtl_fm -g 50 -f 97.1M -M wfm -s 180k -E deemp |  play -r 180k -t raw -e s -b 16 -c 1 -V1 - lowpass 16k
+rtl_fm -g 50 -f 98.4M -M wfm -s 180k -E deemp - | sox -t raw -r 180k -e signed -b 16 -c 1 - -t wav - | ffmpeg -f wav -i - -c:a libmp3lame -b:a 64k -f rtp rtp://224.0.0.1:5004

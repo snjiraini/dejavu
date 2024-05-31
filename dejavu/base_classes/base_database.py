@@ -178,8 +178,9 @@ class BaseDatabase(object, metaclass=abc.ABCMeta):
         """
         pass
 
-
+# 
 def get_database(database_type: str = "mysql") -> BaseDatabase:
+# def get_database(database_type: str = "postgres") -> BaseDatabase:
     """
     Given a database type it returns a database instance for that type.
 
