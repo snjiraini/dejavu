@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the base filename and extension
-base_filename="Hot96fm"
+base_filename="Kiss100"
 extension=".mp3"
 
 # Define the duration for each segment in seconds
