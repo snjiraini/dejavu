@@ -16,6 +16,7 @@ from dejavu.config.settings import (DEFAULT_FS, DEFAULT_OVERLAP_RATIO,
                                     INPUT_CONFIDENCE, INPUT_HASHES, OFFSET,
                                     OFFSET_SECS, SONG_ID, SONG_NAME, TOPN)
 from dejavu.logic.fingerprint import fingerprint
+from .database_handler.django_database import DjangoDatabase
 
 
 class Dejavu:
@@ -23,11 +24,14 @@ class Dejavu:
         self.config = config
 
         # initialize db
-        db_cls = get_database(config.get("database_type", "mysql").lower())
-        # db_cls = get_database(config.get("database_type", "postgres").lower())
+        if config["database_type"] == "django":
+            self.db = DjangoDatabase(config)
+        else:
+            db_cls = get_database(config.get("database_type", "mysql").lower())
+            # db_cls = get_database(config.get("database_type", "postgres").lower())
 
-        self.db = db_cls(**config.get("database", {}))
-        self.db.setup()
+            self.db = db_cls(**config.get("database", {}))
+            self.db.setup()
 
         # if we should limit seconds fingerprinted,
         # None|-1 means use entire track
@@ -135,11 +139,10 @@ class Dejavu:
             print(f"{song_name} already fingerprinted, continuing...")
         else:
             song_name, hashes, file_hash = Dejavu._fingerprint_worker(
-                file_path,
-                self.limit,
+                (file_path, self.limit),
                 song_name=song_name
             )
-            sid = self.db.insert_song(song_name, file_hash)
+            sid = self.db.insert_song(song_name, file_hash, len(hashes))
 
             self.db.insert_hashes(sid, hashes)
             self.db.set_song_fingerprinted(sid)
@@ -227,7 +230,7 @@ class Dejavu:
         return r.recognize(*options, **kwoptions)
 
     @staticmethod
-    def _fingerprint_worker(arguments):
+    def _fingerprint_worker(arguments, song_name=None):
         # Pool.imap sends arguments as tuples so we have to unpack
         # them ourself.
         try:
@@ -235,7 +238,8 @@ class Dejavu:
         except ValueError:
             pass
 
-        song_name, extension = os.path.splitext(os.path.basename(file_name))
+        if song_name is None:
+            song_name, extension = os.path.splitext(os.path.basename(file_name))
 
         fingerprints, file_hash = Dejavu.get_file_fingerprints(file_name, limit, print_output=True)
 

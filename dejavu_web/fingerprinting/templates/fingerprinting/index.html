@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DejaVu Audio Recognition</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .container {
+        display: flex;
+        gap: 20px;
+      }
+      .card {
+        flex: 1;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input[type="file"] {
+        width: 100%;
+        padding: 5px;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #results {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>DejaVu Audio Recognition</h1>
+
+    <div class="container">
+      <div class="card">
+        <h2>Recognize Audio</h2>
+        <form id="recognizeForm" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="audioFile">Upload Audio File:</label>
+            <input
+              type="file"
+              id="audioFile"
+              name="audio_file"
+              accept="audio/*"
+              required
+            />
+          </div>
+          <button type="submit">Recognize</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Fingerprint Song</h2>
+        <form id="fingerprintForm" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="songName">Song Name:</label>
+            <input type="text" id="songName" name="song_name" required />
+          </div>
+          <div class="form-group">
+            <label for="songFile">Upload Song File:</label>
+            <input
+              type="file"
+              id="songFile"
+              name="audio_file"
+              accept="audio/*"
+              required
+            />
+          </div>
+          <button type="submit">Fingerprint</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+      document
+        .getElementById("recognizeForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+
+          try {
+            const response = await fetch("/recognize/", {
+              method: "POST",
+              body: formData,
+            });
+            const data = await response.json();
+
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.style.display = "block";
+            resultsDiv.innerHTML = `<pre>${JSON.stringify(
+              data,
+              null,
+              2
+            )}</pre>`;
+          } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred while recognizing the audio.");
+          }
+        });
+
+      document
+        .getElementById("fingerprintForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+
+          try {
+            const response = await fetch("/fingerprint/", {
+              method: "POST",
+              body: formData,
+            });
+            const data = await response.json();
+
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.style.display = "block";
+            resultsDiv.innerHTML = `<pre>${JSON.stringify(
+              data,
+              null,
+              2
+            )}</pre>`;
+          } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred while fingerprinting the song.");
+          }
+        });
+    </script>
+  </body>
+</html>
