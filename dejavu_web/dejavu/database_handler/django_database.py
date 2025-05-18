@@ -99,8 +99,20 @@ class DjangoDatabase(CommonDatabase):
     def insert_hashes(self, sid, hashes):
         """Insert multiple hashes into the database"""
         with transaction.atomic():
-            for hash, offset in hashes:
-                self.add_fingerprint(hash, sid, offset)
+            # Create fingerprint objects in bulk instead of one by one
+            fingerprints = [
+                self.Fingerprint(
+                    hash=hash_value,
+                    song_id=sid,
+                    offset=offset
+                ) for hash_value, offset in hashes
+            ]
+            
+            # Use bulk_create for much faster insertion
+            # This can be tuned with batch_size for very large hash sets
+            batch_size = 1000
+            for i in range(0, len(fingerprints), batch_size):
+                self.Fingerprint.objects.bulk_create(fingerprints[i:i+batch_size])
 
     def set_song_fingerprinted(self, sid):
         """Mark a song as fingerprinted"""
@@ -109,18 +121,33 @@ class DjangoDatabase(CommonDatabase):
         pass
 
     def return_matches(self, hashes):
-        """Return matches for the given hashes"""
+        """Return matches for the given hashes using an optimized approach"""
         matches = []
         dedup_hashes = {}
         
-        for hash, offset in hashes:
-            fingerprints = self.get_fingerprints_by_hash(hash)
-            for fp in fingerprints:
-                song_id = fp.song.id  # Get the actual ID number
-                matches.append((song_id, fp.offset - offset))
-                if song_id not in dedup_hashes:
-                    dedup_hashes[song_id] = 1
-                else:
-                    dedup_hashes[song_id] += 1
+        # Group hashes for efficient querying
+        hash_values = [hash_value for hash_value, _ in hashes]
+        offset_dict = {hash_value: offset for hash_value, offset in hashes}
+        
+        # Use a single query with __in for much better performance
+        # Split into chunks to avoid query size limits
+        chunk_size = 500
+        all_fingerprints = []
+        
+        for i in range(0, len(hash_values), chunk_size):
+            chunk = hash_values[i:i+chunk_size]
+            fingerprints = list(self.Fingerprint.objects.filter(hash__in=chunk).select_related('song'))
+            all_fingerprints.extend(fingerprints)
+        
+        # Process the matches
+        for fp in all_fingerprints:
+            song_id = fp.song.id
+            input_offset = offset_dict[fp.hash]
+            matches.append((song_id, fp.offset - input_offset))
+            
+            if song_id not in dedup_hashes:
+                dedup_hashes[song_id] = 1
+            else:
+                dedup_hashes[song_id] += 1
         
         return matches, dedup_hashes 

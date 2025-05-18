@@ -1,12 +1,11 @@
-dejavu
-==========
+# dejavu
 
 Audio fingerprinting and recognition algorithm implemented in Python, see the explanation here:  
 [How it works](http://willdrevo.com/fingerprinting-and-audio-recognition-with-python/)
 
-Dejavu can memorize audio by listening to it once and fingerprinting it. Then by playing a song and recording microphone input or reading from disk, Dejavu attempts to match the audio against the fingerprints held in the database, returning the song being played. 
+Dejavu can memorize audio by listening to it once and fingerprinting it. Then by playing a song and recording microphone input or reading from disk, Dejavu attempts to match the audio against the fingerprints held in the database, returning the song being played.
 
-Note: for voice recognition, *Dejavu is not the right tool!* Dejavu excels at recognition of exact signals with reasonable amounts of noise.
+Note: for voice recognition, _Dejavu is not the right tool!_ Dejavu excels at recognition of exact signals with reasonable amounts of noise.
 
 ## Quickstart with Docker
 
@@ -20,7 +19,7 @@ $ docker-compose up -d
 # get a shell inside the container
 $ docker-compose run python /bin/bash
 Starting dejavu_db_1 ... done
-root@f9ea95ce5cea:/code# python example_docker_postgres.py 
+root@f9ea95ce5cea:/code# python example_docker_postgres.py
 Fingerprinting channel 1/2 for test/woodward_43s.wav
 Fingerprinting channel 1/2 for test/sean_secs.wav
 ...
@@ -33,14 +32,14 @@ Type "help" for help.
 
 dejavu=# \dt
             List of relations
- Schema |     Name     | Type  |  Owner   
+ Schema |     Name     | Type  |  Owner
 --------+--------------+-------+----------
  public | fingerprints | table | postgres
  public | songs        | table | postgres
 (2 rows)
 
 dejavu=# select * from fingerprints limit 5;
-          hash          | song_id | offset |        date_created        |       date_modified        
+          hash          | song_id | offset |        date_created        |       date_modified
 ------------------------+---------+--------+----------------------------+----------------------------
  \x71ffcb900d06fe642a18 |       1 |    137 | 2020-06-03 05:14:19.400153 | 2020-06-03 05:14:19.400153
  \xf731d792977330e6cc9f |       1 |    148 | 2020-06-03 05:14:19.400153 | 2020-06-03 05:14:19.400153
@@ -60,18 +59,17 @@ If you want to be able to use the microphone with the Docker container, you'll n
 Follow instructions in [INSTALLATION.md](INSTALLATION.md)
 
 Next, you'll need to create a MySQL database where Dejavu can store fingerprints. For example, on your local setup:
-	
-	$ mysql -u root -p
-	Enter password: **********
-	mysql> CREATE DATABASE IF NOT EXISTS dejavu;
+$ mysql -u root -p
+Enter password: \***\*\*\*\*\***
+mysql> CREATE DATABASE IF NOT EXISTS dejavu;
 
-Now you're ready to start fingerprinting your audio collection! 
+Now you're ready to start fingerprinting your audio collection!
 
 You may also use Postgres, of course. The same method applies.
 
 ## Fingerprinting
 
-Let's say we want to fingerprint all of July 2013's VA US Top 40 hits. 
+Let's say we want to fingerprint all of July 2013's VA US Top 40 hits.
 
 Start by creating a Dejavu object with your configurations settings (Dejavu takes an ordinary Python dictionary for the settings).
 
@@ -81,7 +79,7 @@ Start by creating a Dejavu object with your configurations settings (Dejavu take
 ...     "database": {
 ...         "host": "127.0.0.1",
 ...         "user": "root",
-...         "password": <password above>, 
+...         "password": <password above>,
 ...         "database": <name of the database you created above>,
 ...     }
 ... }
@@ -89,36 +87,38 @@ Start by creating a Dejavu object with your configurations settings (Dejavu take
 ```
 
 Next, give the `fingerprint_directory` method three arguments:
-* input directory to look for audio files
-* audio extensions to look for in the input directory
-* number of processes (optional)
+
+- input directory to look for audio files
+- audio extensions to look for in the input directory
+- number of processes (optional)
 
 ```python
 >>> djv.fingerprint_directory("va_us_top_40/mp3", [".mp3"], 3)
 ```
 
-For a large amount of files, this will take a while. However, Dejavu is robust enough you can kill and restart without affecting progress: Dejavu remembers which songs it fingerprinted and converted and which it didn't, and so won't repeat itself. 
+For a large amount of files, this will take a while. However, Dejavu is robust enough you can kill and restart without affecting progress: Dejavu remembers which songs it fingerprinted and converted and which it didn't, and so won't repeat itself.
 
 You'll have a lot of fingerprints once it completes a large folder of mp3s:
+
 ```python
 >>> print djv.db.get_num_fingerprints()
 5442376
 ```
 
-Also, any subsequent calls to `fingerprint_file` or `fingerprint_directory` will fingerprint and add those songs to the database as well. It's meant to simulate a system where as new songs are released, they are fingerprinted and added to the database seemlessly without stopping the system. 
+Also, any subsequent calls to `fingerprint_file` or `fingerprint_directory` will fingerprint and add those songs to the database as well. It's meant to simulate a system where as new songs are released, they are fingerprinted and added to the database seemlessly without stopping the system.
 
 ## Configuration options
 
-The configuration object to the Dejavu constructor must be a dictionary. 
+The configuration object to the Dejavu constructor must be a dictionary.
 
 The following keys are mandatory:
 
-* `database`, with a value as a dictionary with keys that the database you are using will accept. For example with MySQL, the keys must can be anything that the [`MySQLdb.connect()`](http://mysql-python.sourceforge.net/MySQLdb.html) function will accept. 
+- `database`, with a value as a dictionary with keys that the database you are using will accept. For example with MySQL, the keys must can be anything that the [`MySQLdb.connect()`](http://mysql-python.sourceforge.net/MySQLdb.html) function will accept.
 
 The following keys are optional:
 
-* `fingerprint_limit`: allows you to control how many seconds of each audio file to fingerprint. Leaving out this key, or alternatively using `-1` and `None` will cause Dejavu to fingerprint the entire audio file. Default value is `None`.
-* `database_type`: `mysql` (the default value) and `postgres` are supported. If you'd like to add another subclass for `BaseDatabase` and implement a new type of database, please fork and send a pull request!
+- `fingerprint_limit`: allows you to control how many seconds of each audio file to fingerprint. Leaving out this key, or alternatively using `-1` and `None` will cause Dejavu to fingerprint the entire audio file. Default value is `None`.
+- `database_type`: `mysql` (the default value) and `postgres` are supported. If you'd like to add another subclass for `BaseDatabase` and implement a new type of database, please fork and send a pull request!
 
 An example configuration is as follows:
 
@@ -128,7 +128,7 @@ An example configuration is as follows:
 ...     "database": {
 ...         "host": "127.0.0.1",
 ...         "user": "root",
-...         "password": "Password123", 
+...         "password": "Password123",
 ...         "database": "dejavu_db",
 ...     },
 ...     "database_type" : "mysql",
@@ -147,7 +147,7 @@ Inside `config/settings.py`, you may want to adjust following parameters (some v
     DEFAULT_FAN_VALUE = 5
     DEFAULT_AMP_MIN = 10
     PEAK_NEIGHBORHOOD_SIZE = 10
-    
+
 These parameters are described within the file in detail. Read that in-order to understand the impact of changing these values.
 
 ## Recognizing
@@ -159,11 +159,11 @@ There are two ways to recognize audio using Dejavu. You can recognize by reading
 Through the terminal:
 
 ```bash
-$ python dejavu.py --recognize file sometrack.wav 
+$ python dejavu.py --recognize file sometrack.wav
 {'total_time': 2.863781690597534, 'fingerprint_time': 2.4306554794311523, 'query_time': 0.4067542552947998, 'align_time': 0.007731199264526367, 'results': [{'song_id': 1, 'song_name': 'Taylor Swift - Shake It Off', 'input_total_hashes': 76168, 'fingerprinted_hashes_in_db': 4919, 'hashes_matched_in_input': 794, 'input_confidence': 0.01, 'fingerprinted_confidence': 0.16, 'offset': -924, 'offset_seconds': -30.00018, 'file_sha1': b'3DC269DF7B8DB9B30D2604DA80783155912593E8'}, {...}, ...]}
 ```
 
-or in scripting, assuming you've already instantiated a Dejavu object: 
+or in scripting, assuming you've already instantiated a Dejavu object:
 
 ```python
 >>> from dejavu.logic.recognizer.file_recognizer import FileRecognizer
@@ -187,16 +187,16 @@ $ python dejavu.py --recognize mic 10
 
 ## Testing
 
-Testing out different parameterizations of the fingerprinting algorithm is often useful as the corpus becomes larger and larger, and inevitable tradeoffs between speed and accuracy come into play. 
+Testing out different parameterizations of the fingerprinting algorithm is often useful as the corpus becomes larger and larger, and inevitable tradeoffs between speed and accuracy come into play.
 
 ![Confidence](plots/confidence.png)
 
 Test your Dejavu settings on a corpus of audio files on a number of different metrics:
 
-* Confidence of match (number fingerprints aligned)
-* Offset matching accuracy
-* Song matching accuracy
-* Time to match
+- Confidence of match (number fingerprints aligned)
+- Offset matching accuracy
+- Song matching accuracy
+- Time to match
 
 ![Accuracy](plots/matching_graph.png)
 
@@ -216,9 +216,9 @@ rm -rf ./results ./temp_audio
 python dejavu.py --fingerprint ./mp3/ mp3
 
 ##########
-# Run a test suite on the ./mp3 folder by extracting 1, 2, 3, 4, and 5 
-# second clips sampled randomly from within each song 8 seconds 
-# away from start or end, sampling offset with random seed = 42, and finally, 
+# Run a test suite on the ./mp3 folder by extracting 1, 2, 3, 4, and 5
+# second clips sampled randomly from within each song 8 seconds
+# away from start or end, sampling offset with random seed = 42, and finally,
 # store results in ./results and log to ./results/dejavu-test.log
 python run_tests.py \
     --secs 5 \
@@ -230,15 +230,15 @@ python run_tests.py \
     ./mp3
 ```
 
-The testing scripts are as of now are a bit rough, and could certainly use some love and attention if you're interested in submitting a PR! For example, underscores in audio filenames currently [breaks](https://github.com/worldveil/dejavu/issues/63) the test scripts. 
+The testing scripts are as of now are a bit rough, and could certainly use some love and attention if you're interested in submitting a PR! For example, underscores in audio filenames currently [breaks](https://github.com/worldveil/dejavu/issues/63) the test scripts.
 
 ## How does it work?
 
 The algorithm works off a fingerprint based system, much like:
 
-* [Shazam](http://www.ee.columbia.edu/~dpwe/papers/Wang03-shazam.pdf)
-* [MusicRetrieval](http://www.cs.cmu.edu/~yke/musicretrieval/)
-* [Chromaprint](https://oxygene.sk/2011/01/how-does-chromaprint-work/)
+- [Shazam](http://www.ee.columbia.edu/~dpwe/papers/Wang03-shazam.pdf)
+- [MusicRetrieval](http://www.cs.cmu.edu/~yke/musicretrieval/)
+- [Chromaprint](https://oxygene.sk/2011/01/how-does-chromaprint-work/)
 
 The "fingerprints" are locality sensitive hashes that are computed from the spectrogram of the audio. This is done by taking the FFT of the signal over overlapping windows of the song and identifying peaks. A very robust peak finding algorithm is needed, otherwise you'll have a terrible signal to noise ratio.
 
@@ -272,7 +272,7 @@ Reading from disk was an overwhelming 100% recall - no mistakes were made over t
 
 ### 2. Audio over laptop microphone
 
-Here I wrote a script to randomly chose `n` seconds of audio from the original mp3 file to play and have Dejavu listen over the microphone. To be fair I only allowed segments of audio that were more than 10 seconds from the starting/ending of the track to avoid listening to silence. 
+Here I wrote a script to randomly chose `n` seconds of audio from the original mp3 file to play and have Dejavu listen over the microphone. To be fair I only allowed segments of audio that were more than 10 seconds from the starting/ending of the track to avoid listening to silence.
 
 Additionally my friend was even talking and I was humming along a bit during the whole process, just to throw in some noise.
 
@@ -282,18 +282,18 @@ Here are the results for different values of listening time (`n`):
 
 This is pretty rad. For the percentages:
 
-Number of Seconds | Number Correct | Percentage Accuracy
-----|----|----
-1 | 27 / 45 | 60.0%
-2 | 43 / 45 | 95.6%
-3 | 44 / 45 | 97.8%
-4 | 44 / 45 | 97.8%
-5 | 45 / 45 | 100.0%
-6 | 45 / 45 | 100.0%
+| Number of Seconds | Number Correct | Percentage Accuracy |
+| ----------------- | -------------- | ------------------- |
+| 1                 | 27 / 45        | 60.0%               |
+| 2                 | 43 / 45        | 95.6%               |
+| 3                 | 44 / 45        | 97.8%               |
+| 4                 | 44 / 45        | 97.8%               |
+| 5                 | 45 / 45        | 100.0%              |
+| 6                 | 45 / 45        | 100.0%              |
 
 Even with only a single second, randomly chosen from anywhere in the song, Dejavu is getting 60%! One extra second to 2 seconds get us to around 96%, while getting perfect only took 5 seconds or more. Honestly when I was testing this myself, I found Dejavu beat me - listening to only 1-2 seconds of a song out of context to identify is pretty hard. I had even been listening to these same songs for two days straight while debugging...
 
-In conclusion, Dejavu works amazingly well, even with next to nothing to work with. 
+In conclusion, Dejavu works amazingly well, even with next to nothing to work with.
 
 ### 3. Compressed streamed music played on my iPhone
 
@@ -310,25 +310,25 @@ On my MacBook Pro, matching was done at 3x listening speed with a small constant
 As you can see, the relationship is quite linear. The line you see is a least-squares linear regression fit to the data, with the corresponding line equation:
 
     1.364757 * record_time - 0.034373 = time_to_match
-    
+
 Notice of course since the matching itself is single threaded, the matching time includes the recording time. This makes sense with the 3x speed in purely matching, as:
-    
+
     1 (recording) + 1/3 (matching) = 4/3 ~= 1.364757
-    
+
 if we disregard the miniscule constant term.
 
 The overhead of peak finding is the bottleneck - I experimented with multithreading and realtime matching, and alas, it wasn't meant to be in Python. An equivalent Java or C/C++ implementation would most likely have little trouble keeping up, applying FFT and peakfinding in realtime.
 
-An important caveat is of course, the round trip time (RTT) for making matches. Since my MySQL instance was local, I didn't have to deal with the latency penalty of transfering fingerprint matches over the air. This would add RTT to the constant term in the overall calculation, but would not effect the matching process. 
+An important caveat is of course, the round trip time (RTT) for making matches. Since my MySQL instance was local, I didn't have to deal with the latency penalty of transfering fingerprint matches over the air. This would add RTT to the constant term in the overall calculation, but would not effect the matching process.
 
 ### Storage
 
 For the 45 songs I fingerprinted, the database used 377 MB of space for 5.4 million fingerprints. In comparison, the disk usage is given below:
 
-Audio Information Type | Storage in MB 
-----|----
-mp3 | 339
-wav | 1885
-fingerprints | 377
+| Audio Information Type | Storage in MB |
+| ---------------------- | ------------- |
+| mp3                    | 339           |
+| wav                    | 1885          |
+| fingerprints           | 377           |
 
-There's a pretty direct trade-off between the necessary record time and the amount of storage needed. Adjusting the amplitude threshold for peaks and the fan value for fingerprinting will add more fingerprints and bolster the accuracy at the expense of more space. 
+There's a pretty direct trade-off between the necessary record time and the amount of storage needed. Adjusting the amplitude threshold for peaks and the fan value for fingerprinting will add more fingerprints and bolster the accuracy at the expense of more space.

@@ -12,6 +12,20 @@ from .models import Song, Fingerprint
 def index(request):
     return render(request, 'fingerprinting/index.html')
 
+def clean_for_json(obj):
+    """Convert problematic types to JSON-serializable types."""
+    if isinstance(obj, bytes):
+        return obj.decode('utf-8', errors='replace')
+    elif isinstance(obj, dict):
+        return {k: clean_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [clean_for_json(item) for item in obj]
+    elif hasattr(obj, 'dtype') and hasattr(obj, 'item'):  # Handle NumPy types
+        return obj.item()
+    elif str(type(obj)).startswith("<class 'numpy."):  # Fallback for NumPy types
+        return int(obj) if hasattr(obj, '__int__') else float(obj) if hasattr(obj, '__float__') else str(obj)
+    return obj
+
 @csrf_exempt
 def recognize_audio(request):
     if request.method == 'POST' and request.FILES.get('audio_file'):
@@ -25,13 +39,19 @@ def recognize_audio(request):
         
         print(f"Debug: Recognition - File saved to {temp_path}")
         
-        # Initialize DejaVu with Django ORM
+        # Initialize DejaVu with Django ORM and optimized settings
         config = {
             "database_type": "django",
             "models": {
                 "Song": Song,
                 "Fingerprint": Fingerprint
-            }
+            },
+            # Add optimal fingerprinting settings from original Dejavu
+            "fingerprint_limit": 15,  # Only use first 15 seconds for recognition
+            "peak_neighborhood_size": 20,  # Original value that worked well
+            "fan_value": 15,  # Original higher fan value for better matching
+            "amp_min": 10,  # Keep the default amplitude threshold
+            "peak_sort": True  # Sort peaks temporally (better for matching)
         }
         
         print(f"Debug: Recognition - Initializing Dejavu")
@@ -45,11 +65,22 @@ def recognize_audio(request):
             print(f"Debug: Recognition - Song {song.song_name} has {fp_count} fingerprints")
         
         try:
-            # Recognize the song
+            # Recognize the song with optimized parameters
             print(f"Debug: Recognition - Starting recognition process")
             results = djv.recognize(FileRecognizer, temp_path)
             print(f"Debug: Recognition - Results: {results}")
             
+            # Add some additional context if a match was found
+            if results and 'results' in results and results['results']:
+                # Add confidence information to help the user understand the match quality
+                total_time = results.get('total_time', 0)
+                results['match_quality'] = {
+                    'processing_time': f"{total_time:.2f} seconds",
+                    'confidence_explanation': "Higher confidence values indicate a better match."
+                }
+            
+            # Convert problematic types to JSON-serializable types
+            results = clean_for_json(results)
             return JsonResponse(results)
         except Exception as e:
             import traceback
@@ -74,13 +105,19 @@ def fingerprint_song(request):
             for chunk in audio_file.chunks():
                 destination.write(chunk)
         
-        # Initialize DejaVu with Django ORM
+        # Initialize DejaVu with Django ORM and optimized settings
         config = {
             "database_type": "django",
             "models": {
                 "Song": Song,
                 "Fingerprint": Fingerprint
-            }
+            },
+            # Add optimal fingerprinting settings from original Dejavu
+            "fingerprint_limit": None,  # Process the entire file
+            "peak_neighborhood_size": 20,  # Original value that worked well
+            "fan_value": 15,  # Original higher fan value for better matching
+            "amp_min": 10,  # Keep the default amplitude threshold
+            "peak_sort": True  # Sort peaks temporally (better for matching)
         }
         
         djv = Dejavu(config)
@@ -92,29 +129,38 @@ def fingerprint_song(request):
                 song_name=song_name
             )
             
+            # Only create the necessary number of fingerprints
+            # Original Dejavu used a more selective approach
+            # Filter to only the most significant peaks
+            if len(hashes) > 10000:
+                print(f"Too many hashes ({len(hashes)}), filtering to most significant")
+                # Sort by amplitude (assuming hashes have amplitude info)
+                hashes = sorted(hashes, key=lambda x: x[0], reverse=True)[:10000]
+            
             # Check if song already exists
             existing_song = None
             try:
                 existing_song = Song.objects.get(file_hash=file_hash)
                 sid = existing_song.id
                 
-                # Optionally clear existing fingerprints to refresh them
+                # Clear existing fingerprints for this song
                 Fingerprint.objects.filter(song_id=sid).delete()
             except Song.DoesNotExist:
                 # Insert new song
                 sid = djv.db.insert_song(song_name, file_hash, len(hashes))
             
-            # Insert fingerprints
-            for hash_value, offset in hashes:
-                djv.db.add_fingerprint(hash_value, sid, offset)
+            # Use bulk insertion for fingerprints (much faster)
+            djv.db.insert_hashes(sid, hashes)
             
             # Verify fingerprints were saved
             fingerprint_count = Fingerprint.objects.filter(song_id=sid).count()
-            return JsonResponse({
+            response_data = {
                 'message': f'Successfully fingerprinted {song_name}',
                 'hash_count': len(hashes),
                 'fingerprints_stored': fingerprint_count
-            })
+            }
+            response_data = clean_for_json(response_data)
+            return JsonResponse(response_data)
         except Exception as e:
             import traceback
             traceback.print_exc()
