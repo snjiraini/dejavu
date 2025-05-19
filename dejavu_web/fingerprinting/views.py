@@ -8,6 +8,13 @@ from dejavu import Dejavu
 from dejavu.logic.recognizer.file_recognizer import FileRecognizer
 from dejavu.logic.recognizer.microphone_recognizer import MicrophoneRecognizer
 from .models import Song, Fingerprint
+from dejavu.config.settings import (
+    DEFAULT_FAN_VALUE,
+    PEAK_NEIGHBORHOOD_SIZE,
+    DEFAULT_AMP_MIN,
+    PEAK_SORT,
+    CONNECTIVITY_MASK
+)
 
 def index(request):
     return render(request, 'fingerprinting/index.html')
@@ -39,19 +46,19 @@ def recognize_audio(request):
         
         print(f"Debug: Recognition - File saved to {temp_path}")
         
-        # Initialize DejaVu with Django ORM and optimized settings
+        # Initialize DejaVu with Django ORM using global settings
         config = {
             "database_type": "django",
             "models": {
                 "Song": Song,
                 "Fingerprint": Fingerprint
             },
-            # Add optimal fingerprinting settings from original Dejavu
-            "fingerprint_limit": 15,  # Only use first 15 seconds for recognition
-            "peak_neighborhood_size": 20,  # Original value that worked well
-            "fan_value": 15,  # Original higher fan value for better matching
-            "amp_min": 10,  # Keep the default amplitude threshold
-            "peak_sort": True  # Sort peaks temporally (better for matching)
+            "fingerprint_limit": None,  # Process the entire file
+            "peak_neighborhood_size": PEAK_NEIGHBORHOOD_SIZE,
+            "fan_value": DEFAULT_FAN_VALUE,
+            "amp_min": DEFAULT_AMP_MIN,
+            "peak_sort": PEAK_SORT,
+            "connectivity_mask": CONNECTIVITY_MASK
         }
         
         print(f"Debug: Recognition - Initializing Dejavu")
@@ -65,7 +72,7 @@ def recognize_audio(request):
             print(f"Debug: Recognition - Song {song.song_name} has {fp_count} fingerprints")
         
         try:
-            # Recognize the song with optimized parameters
+            # Recognize the song
             print(f"Debug: Recognition - Starting recognition process")
             results = djv.recognize(FileRecognizer, temp_path)
             print(f"Debug: Recognition - Results: {results}")
@@ -74,9 +81,20 @@ def recognize_audio(request):
             if results and 'results' in results and results['results']:
                 # Add confidence information to help the user understand the match quality
                 total_time = results.get('total_time', 0)
+                
+                # Calculate confidence percentage for each match
+                for match in results['results']:
+                    # Calculate input confidence percentage
+                    input_hashes = match.get('input_total_hashes', 0)
+                    hashes_matched = match.get('hashes_matched_in_input', 0)
+                    confidence = (hashes_matched / input_hashes * 100) if input_hashes > 0 else 0
+                    
+                    # Add confidence percentage to the match
+                    match['confidence'] = round(confidence, 2)
+                
                 results['match_quality'] = {
                     'processing_time': f"{total_time:.2f} seconds",
-                    'confidence_explanation': "Higher confidence values indicate a better match."
+                    'confidence_explanation': "Confidence shows what percentage of your audio matched the song"
                 }
             
             # Convert problematic types to JSON-serializable types
@@ -105,19 +123,19 @@ def fingerprint_song(request):
             for chunk in audio_file.chunks():
                 destination.write(chunk)
         
-        # Initialize DejaVu with Django ORM and optimized settings
+        # Initialize DejaVu with Django ORM using global settings
         config = {
             "database_type": "django",
             "models": {
                 "Song": Song,
                 "Fingerprint": Fingerprint
             },
-            # Add optimal fingerprinting settings from original Dejavu
             "fingerprint_limit": None,  # Process the entire file
-            "peak_neighborhood_size": 20,  # Original value that worked well
-            "fan_value": 15,  # Original higher fan value for better matching
-            "amp_min": 10,  # Keep the default amplitude threshold
-            "peak_sort": True  # Sort peaks temporally (better for matching)
+            "peak_neighborhood_size": PEAK_NEIGHBORHOOD_SIZE,
+            "fan_value": DEFAULT_FAN_VALUE,
+            "amp_min": DEFAULT_AMP_MIN,
+            "peak_sort": PEAK_SORT,
+            "connectivity_mask": CONNECTIVITY_MASK
         }
         
         djv = Dejavu(config)
@@ -128,14 +146,6 @@ def fingerprint_song(request):
                 (temp_path, None), 
                 song_name=song_name
             )
-            
-            # Only create the necessary number of fingerprints
-            # Original Dejavu used a more selective approach
-            # Filter to only the most significant peaks
-            if len(hashes) > 10000:
-                print(f"Too many hashes ({len(hashes)}), filtering to most significant")
-                # Sort by amplitude (assuming hashes have amplitude info)
-                hashes = sorted(hashes, key=lambda x: x[0], reverse=True)[:10000]
             
             # Check if song already exists
             existing_song = None
@@ -149,7 +159,7 @@ def fingerprint_song(request):
                 # Insert new song
                 sid = djv.db.insert_song(song_name, file_hash, len(hashes))
             
-            # Use bulk insertion for fingerprints (much faster)
+            # Use bulk insertion for fingerprints
             djv.db.insert_hashes(sid, hashes)
             
             # Verify fingerprints were saved
