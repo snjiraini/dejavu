@@ -26,7 +26,7 @@ Fingerprinting channel 1/2 for test/sean_secs.wav
 
 # connect to the database and poke around
 root@f9ea95ce5cea:/code# psql -h db -U postgres dejavu
-Password for user postgres:  # type "password", as specified in the docker-compose.yml !
+Password for user postgres:  # type "password", as specified in the .devcontainer/docker-compose.yml !
 psql (11.7 (Debian 11.7-0+deb10u1), server 10.7)
 Type "help" for help.
 

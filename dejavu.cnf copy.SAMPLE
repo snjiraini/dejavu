@@ -7,3 +7,13 @@
     },
     "database_type": "mysql"
 }
+
+{
+    "database": {
+        "host": "db",
+        "user": "postgres",
+        "password": "password",
+        "database": "dejavu"
+    },
+    "database_type": "postgres"
+}
