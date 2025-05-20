@@ -42,31 +42,31 @@ class Dejavu:
 
     def __load_fingerprinted_audio_hashes(self) -> None:
         """
-        Keeps a dictionary with the hashes of the fingerprinted songs, in that way is possible to check
+        Keeps a dictionary with the hashes of the fingerprinted tracks, in that way is possible to check
         whether or not an audio file was already processed.
         """
-        # get songs previously indexed
-        self.songs = self.db.get_songs()
-        self.songhashes_set = set()  # to know which ones we've computed before
-        for song in self.songs:
-            song_hash = song[FIELD_FILE_SHA1]
-            self.songhashes_set.add(song_hash)
+        # get tracks previously indexed
+        self.tracks = self.db.get_songs()
+        self.trackhashes_set = set()  # to know which ones we've computed before
+        for track in self.tracks:
+            track_hash = track[FIELD_FILE_SHA1]
+            self.trackhashes_set.add(track_hash)
 
     def get_fingerprinted_songs(self) -> List[Dict[str, any]]:
         """
-        To pull all fingerprinted songs from the database.
+        To pull all fingerprinted tracks from the database.
 
         :return: a list of fingerprinted audios from the database.
         """
         return self.db.get_songs()
 
-    def delete_songs_by_id(self, song_ids: List[int]) -> None:
+    def delete_songs_by_id(self, track_ids: List[int]) -> None:
         """
         Deletes all audios given their ids.
 
-        :param song_ids: song ids to delete from the database.
+        :param track_ids: track ids to delete from the database.
         """
-        self.db.delete_songs_by_id(song_ids)
+        self.db.delete_songs_by_id(track_ids)
 
     def fingerprint_directory(self, path: str, extensions: str, nprocesses: int = None) -> None:
         """
@@ -89,7 +89,7 @@ class Dejavu:
         filenames_to_fingerprint = []
         for filename, _ in decoder.find_files(path, extensions):
             # don't refingerprint already fingerprinted files
-            if decoder.unique_hash(filename) in self.songhashes_set:
+            if decoder.unique_hash(filename) in self.trackhashes_set:
                 print(f"{filename} already fingerprinted, continuing...")
                 continue
 
@@ -104,7 +104,7 @@ class Dejavu:
         # Loop till we have all of them
         while True:
             try:
-                song_name, hashes, file_hash = next(iterator)
+                track_title, hashes, file_hash = next(iterator)
             except multiprocessing.TimeoutError:
                 continue
             except StopIteration:
@@ -114,38 +114,38 @@ class Dejavu:
                 # Print traceback because we can't reraise it here
                 traceback.print_exc(file=sys.stdout)
             else:
-                sid = self.db.insert_song(song_name, file_hash, len(hashes))
+                track_id = self.db.insert_song(track_title, file_hash, len(hashes))
 
-                self.db.insert_hashes(sid, hashes)
-                self.db.set_song_fingerprinted(sid)
+                self.db.insert_hashes(track_id, hashes)
+                self.db.set_song_fingerprinted(track_id)
                 self.__load_fingerprinted_audio_hashes()
 
         pool.close()
         pool.join()
 
-    def fingerprint_file(self, file_path: str, song_name: str = None) -> None:
+    def fingerprint_file(self, file_path: str, track_title: str = None) -> None:
         """
         Given a path to a file the method generates hashes for it and stores them in the database
         for later be queried.
 
         :param file_path: path to the file.
-        :param song_name: song name associated to the audio file.
+        :param track_title: track title associated to the audio file.
         """
-        song_name_from_path = decoder.get_audio_name_from_path(file_path)
-        song_hash = decoder.unique_hash(file_path)
-        song_name = song_name or song_name_from_path
+        track_title_from_path = decoder.get_audio_name_from_path(file_path)
+        track_hash = decoder.unique_hash(file_path)
+        track_title = track_title or track_title_from_path
         # don't refingerprint already fingerprinted files
-        if song_hash in self.songhashes_set:
-            print(f"{song_name} already fingerprinted, continuing...")
+        if track_hash in self.trackhashes_set:
+            print(f"{track_title} already fingerprinted, continuing...")
         else:
-            song_name, hashes, file_hash = Dejavu._fingerprint_worker(
+            track_title, hashes, file_hash = Dejavu._fingerprint_worker(
                 (file_path, self.limit),
-                song_name=song_name
+                track_title=track_title
             )
-            sid = self.db.insert_song(song_name, file_hash, len(hashes))
+            track_id = self.db.insert_song(track_title, file_hash, len(hashes))
 
-            self.db.insert_hashes(sid, hashes)
-            self.db.set_song_fingerprinted(sid)
+            self.db.insert_hashes(track_id, hashes)
+            self.db.set_song_fingerprinted(track_id)
             self.__load_fingerprinted_audio_hashes()
 
     def generate_fingerprints(self, samples: List[int], Fs=DEFAULT_FS) -> Tuple[List[Tuple[str, int]], float]:
@@ -167,7 +167,7 @@ class Dejavu:
 
         :param hashes: list of tuples for hashes and their corresponding offsets
         :return: a tuple containing the matches found against the db, a dictionary which counts the different
-         hashes matched for each song (with the song id as key), and the time that the query took.
+         hashes matched for each track (with the track id as key), and the time that the query took.
 
         """
         t = time()
@@ -183,54 +183,54 @@ class Dejavu:
         consensus about which hashes are "true" signal from the audio.
 
         :param matches: matches from the database
-        :param dedup_hashes: dictionary containing the hashes matched without duplicates for each song
-        (key is the song id).
+        :param dedup_hashes: dictionary containing the hashes matched without duplicates for each track
+        (key is the track id).
         :param queried_hashes: amount of hashes sent for matching against the db
         :param topn: number of results being returned back.
         :return: a list of dictionaries (based on topn) with match information.
         """
-        # count offset occurrences per song and keep only the maximum ones.
+        # count offset occurrences per track and keep only the maximum ones.
         sorted_matches = sorted(matches, key=lambda m: (m[0], m[1]))
         counts = [(*key, len(list(group))) for key, group in groupby(sorted_matches, key=lambda m: (m[0], m[1]))]
-        songs_matches = sorted(
+        tracks_matches = sorted(
             [max(list(group), key=lambda g: g[2]) for key, group in groupby(counts, key=lambda count: count[0])],
             key=lambda count: count[2], reverse=True
         )
 
-        songs_result = []
-        for song_id, offset, _ in songs_matches[0:topn]:  # consider topn elements in the result
-            song = self.db.get_song_by_id(song_id)
+        tracks_result = []
+        for track_id, offset, _ in tracks_matches[0:topn]:  # consider topn elements in the result
+            track = self.db.get_song_by_id(track_id)
 
-            song_name = song.get(SONG_NAME, None)
-            song_hashes = song.get(FIELD_TOTAL_HASHES, None)
+            track_title = track.get(SONG_NAME, None)
+            track_hashes = track.get(FIELD_TOTAL_HASHES, None)
             nseconds = round(float(offset) / DEFAULT_FS * DEFAULT_WINDOW_SIZE * DEFAULT_OVERLAP_RATIO, 5)
-            hashes_matched = dedup_hashes[song_id]
+            hashes_matched = dedup_hashes[track_id]
 
-            song = {
-                SONG_ID: song_id,
-                SONG_NAME: song_name.encode("utf8"),
+            track = {
+                SONG_ID: track_id,
+                SONG_NAME: track_title,
                 INPUT_HASHES: queried_hashes,
-                FINGERPRINTED_HASHES: song_hashes,
+                FINGERPRINTED_HASHES: track_hashes,
                 HASHES_MATCHED: hashes_matched,
                 # Percentage regarding hashes matched vs hashes from the input.
                 INPUT_CONFIDENCE: round(hashes_matched / queried_hashes, 2),
                 # Percentage regarding hashes matched vs hashes fingerprinted in the db.
-                FINGERPRINTED_CONFIDENCE: round(hashes_matched / song_hashes, 2),
+                FINGERPRINTED_CONFIDENCE: round(hashes_matched / track_hashes, 2),
                 OFFSET: offset,
                 OFFSET_SECS: nseconds,
-                FIELD_FILE_SHA1: song.get(FIELD_FILE_SHA1, None).encode("utf8")
+                FIELD_FILE_SHA1: track.get(FIELD_FILE_SHA1, None)
             }
 
-            songs_result.append(song)
+            tracks_result.append(track)
 
-        return songs_result
+        return tracks_result
 
     def recognize(self, recognizer, *options, **kwoptions) -> Dict[str, any]:
         r = recognizer(self)
         return r.recognize(*options, **kwoptions)
 
     @staticmethod
-    def _fingerprint_worker(arguments, song_name=None):
+    def _fingerprint_worker(arguments, track_title=None):
         # Pool.imap sends arguments as tuples so we have to unpack
         # them ourself.
         try:
@@ -238,26 +238,26 @@ class Dejavu:
         except ValueError:
             pass
 
-        if song_name is None:
-            song_name, extension = os.path.splitext(os.path.basename(file_name))
+        if track_title is None:
+            track_title, extension = os.path.splitext(os.path.basename(file_name))
 
         fingerprints, file_hash = Dejavu.get_file_fingerprints(file_name, limit, print_output=True)
 
-        return song_name, fingerprints, file_hash
+        return track_title, fingerprints, file_hash
 
     @staticmethod
     def get_file_fingerprints(file_name: str, limit: int, print_output: bool = False):
         channels, fs, file_hash = decoder.read(file_name, limit)
         fingerprints = set()
         channel_amount = len(channels)
-        for channeln, channel in enumerate(channels, start=1):
+        for channeln, channel in enumerate(channels):
             if print_output:
-                print(f"Fingerprinting channel {channeln}/{channel_amount} for {file_name}")
+                print(f"Fingerprinting channel {channeln + 1}/{channel_amount}")
 
             hashes = fingerprint(channel, Fs=fs)
 
             if print_output:
-                print(f"Finished channel {channeln}/{channel_amount} for {file_name}")
+                print(f"Finished channel {channeln + 1}/{channel_amount}")
 
             fingerprints |= set(hashes)
 

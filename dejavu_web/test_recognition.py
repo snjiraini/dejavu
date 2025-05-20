@@ -29,7 +29,7 @@ except ImportError:
 
 from dejavu import Dejavu
 from dejavu.logic.recognizer.file_recognizer import FileRecognizer
-from fingerprinting.models import Song, Fingerprint
+from fingerprinting.models import Track, Fingerprint
 from dejavu.config.settings import (
     DEFAULT_FAN_VALUE,
     PEAK_NEIGHBORHOOD_SIZE,
@@ -136,7 +136,7 @@ def test_recognition(sample_paths, results_dir, logger):
     config = {
         "database_type": "django",
         "models": {
-            "Song": Song,
+            "Track": Track,
             "Fingerprint": Fingerprint
         },
         "fingerprint_limit": None,
@@ -154,14 +154,14 @@ def test_recognition(sample_paths, results_dir, logger):
     correct_matches = 0
     perfect_offsets = 0
     
-    # Function to extract expected song name from sample filename
-    def get_expected_song(filename):
+    # Function to extract expected track title from sample filename
+    def get_expected_track(filename):
         return os.path.basename(filename).split('_')[0]
     
     logger.info(f"Testing {total_tests} samples...")
     for i, file_path in enumerate(sample_paths):
         try:
-            expected_song = get_expected_song(file_path)
+            expected_track = get_expected_track(file_path)
             duration = file_path.split('_')[1].replace('sec', '')
             start_time = int(file_path.split('_start_')[1].split('.')[0])
             
@@ -172,7 +172,7 @@ def test_recognition(sample_paths, results_dir, logger):
             
             match_info = {
                 "file": os.path.basename(file_path),
-                "expected": expected_song,
+                "expected": expected_track,
                 "duration": duration,
                 "matched": False,
                 "confidence": 0,
@@ -181,16 +181,16 @@ def test_recognition(sample_paths, results_dir, logger):
             
             if result and 'results' in result and result['results']:
                 match = result['results'][0]
-                matched_song = match.get('song_name', b'').decode('utf-8') if isinstance(match.get('song_name', b''), bytes) else match.get('song_name', '')
+                matched_track = match.get('title', b'').decode('utf-8') if isinstance(match.get('title', b''), bytes) else match.get('title', '')
                 confidence = match.get('confidence', 0) if 'confidence' in match else round(match.get('input_confidence', 0) * 100, 2)
                 offset_seconds = match.get('offset_seconds', 0)
                 
                 match_info["matched"] = True
-                match_info["matched_song"] = matched_song
+                match_info["matched_track"] = matched_track
                 match_info["confidence"] = confidence
                 
-                # Check if this is the correct song
-                if expected_song in matched_song:
+                # Check if this is the correct track
+                if expected_track in matched_track:
                     correct_matches += 1
                     match_info["correct"] = True
                     
@@ -212,7 +212,7 @@ def test_recognition(sample_paths, results_dir, logger):
             
             # Print summary for this test
             if match_info["matched"]:
-                logger.info(f"  Result: Matched '{match_info.get('matched_song', 'Unknown')}' with {match_info.get('confidence', 0)}% confidence")
+                logger.info(f"  Result: Matched '{match_info.get('matched_track', 'Unknown')}' with {match_info.get('confidence', 0)}% confidence")
                 logger.info(f"  Correct: {match_info.get('correct', False)}")
                 if match_info.get('correct', False):
                     logger.info(f"  Offset Accuracy: {match_info.get('offset_accuracy', 'N/A')}")

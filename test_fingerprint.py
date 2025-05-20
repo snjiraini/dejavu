@@ -13,7 +13,7 @@ django.setup()
 
 from dejavu import Dejavu
 from dejavu.logic.recognizer.file_recognizer import FileRecognizer
-from fingerprinting.models import Song, Fingerprint
+from fingerprinting.models import Track, Fingerprint
 from dejavu.config.settings import (
     DEFAULT_FAN_VALUE,
     PEAK_NEIGHBORHOOD_SIZE,
@@ -30,7 +30,7 @@ def fingerprint_directory(directory_path):
     config = {
         "database_type": "django",
         "models": {
-            "Song": Song,
+            "Track": Track,
             "Fingerprint": Fingerprint
         },
         "fingerprint_limit": None,  # Process the entire file
@@ -58,9 +58,9 @@ def fingerprint_directory(directory_path):
     for file_path in audio_files:
         try:
             print(f"Fingerprinting {file_path}...")
-            song_name = os.path.splitext(os.path.basename(file_path))[0]
-            djv.fingerprint_file(file_path, song_name=song_name)
-            print(f"Successfully fingerprinted {song_name}")
+            track_title = os.path.splitext(os.path.basename(file_path))[0]
+            djv.fingerprint_file(file_path, track_title=track_title)
+            print(f"Successfully fingerprinted {track_title}")
         except Exception as e:
             print(f"Error fingerprinting {file_path}: {str(e)}")
     
@@ -74,7 +74,7 @@ def test_recognition(directory_path):
     config = {
         "database_type": "django",
         "models": {
-            "Song": Song,
+            "Track": Track,
             "Fingerprint": Fingerprint
         },
         "fingerprint_limit": None,  # Process the entire file for recognition too
@@ -112,7 +112,7 @@ def test_recognition(directory_path):
             
             if result and 'results' in result and result['results']:
                 for match in result['results']:
-                    print(f"  Matched: {match['song_name']}")
+                    print(f"  Matched: {match['track_title']}")
                     print(f"  Input confidence: {match['input_confidence']}")
                     print(f"  Fingerprinted confidence: {match['fingerprinted_confidence']}")
                     print(f"  Offset: {match['offset_seconds']} seconds")

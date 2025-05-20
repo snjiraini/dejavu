@@ -7,7 +7,7 @@ import json
 from dejavu import Dejavu
 from dejavu.logic.recognizer.file_recognizer import FileRecognizer
 from dejavu.logic.recognizer.microphone_recognizer import MicrophoneRecognizer
-from .models import Song, Fingerprint
+from .models import Track, Fingerprint, Artist, Album, AudioFile
 from dejavu.config.settings import (
     DEFAULT_FAN_VALUE,
     PEAK_NEIGHBORHOOD_SIZE,
@@ -50,7 +50,7 @@ def recognize_audio(request):
         config = {
             "database_type": "django",
             "models": {
-                "Song": Song,
+                "Track": Track,  # Use Track model directly
                 "Fingerprint": Fingerprint
             },
             "fingerprint_limit": None,  # Process the entire file
@@ -65,11 +65,11 @@ def recognize_audio(request):
         djv = Dejavu(config)
         
         # Check DB state before recognition
-        songs = list(Song.objects.all())
-        print(f"Debug: Recognition - Found {len(songs)} songs in database")
-        for song in songs:
-            fp_count = Fingerprint.objects.filter(song=song).count()
-            print(f"Debug: Recognition - Song {song.song_name} has {fp_count} fingerprints")
+        tracks = list(Track.objects.all())
+        print(f"Debug: Recognition - Found {len(tracks)} tracks in database")
+        for track in tracks:
+            fp_count = Fingerprint.objects.filter(track=track).count()
+            print(f"Debug: Recognition - Track {track.title} has {fp_count} fingerprints")
         
         try:
             # Recognize the song
@@ -94,7 +94,7 @@ def recognize_audio(request):
                 
                 results['match_quality'] = {
                     'processing_time': f"{total_time:.2f} seconds",
-                    'confidence_explanation': "Confidence shows what percentage of your audio matched the song"
+                    'confidence_explanation': "Confidence shows what percentage of your audio matched the track"
                 }
             
             # Convert problematic types to JSON-serializable types
@@ -115,7 +115,7 @@ def recognize_audio(request):
 def fingerprint_song(request):
     if request.method == 'POST' and request.FILES.get('audio_file'):
         audio_file = request.FILES['audio_file']
-        song_name = request.POST.get('song_name', audio_file.name)
+        track_title = request.POST.get('track_title', audio_file.name)  # Use track_title instead of song_name
         
         # Save the uploaded file temporarily
         temp_path = f"/tmp/{audio_file.name}"
@@ -127,7 +127,7 @@ def fingerprint_song(request):
         config = {
             "database_type": "django",
             "models": {
-                "Song": Song,
+                "Track": Track,  # Use Track model directly
                 "Fingerprint": Fingerprint
             },
             "fingerprint_limit": None,  # Process the entire file
@@ -142,30 +142,67 @@ def fingerprint_song(request):
         
         try:
             # Process the fingerprinting directly
-            song_name, hashes, file_hash = Dejavu._fingerprint_worker(
+            # Now using track_title since we've updated Dejavu to use it
+            track_title, hashes, file_hash = Dejavu._fingerprint_worker(
                 (temp_path, None), 
-                song_name=song_name
+                track_title=track_title
             )
             
-            # Check if song already exists
-            existing_song = None
+            # Check if track already exists
+            existing_track = None
             try:
-                existing_song = Song.objects.get(file_hash=file_hash)
-                sid = existing_song.id
+                existing_track = Track.objects.get(file_hash=file_hash)
+                track_id = existing_track.track_id
                 
-                # Clear existing fingerprints for this song
-                Fingerprint.objects.filter(song_id=sid).delete()
-            except Song.DoesNotExist:
-                # Insert new song
-                sid = djv.db.insert_song(song_name, file_hash, len(hashes))
+                # Clear existing fingerprints for this track
+                Fingerprint.objects.filter(track_id=track_id).delete()
+            except Track.DoesNotExist:
+                # Create new track directly (instead of using insert_song)
+                new_track = Track.objects.create(
+                    title=track_title,
+                    file_hash=file_hash,
+                    total_hashes=len(hashes)
+                )
+                track_id = new_track.track_id
+                
+                # Create default audio file for the track
+                AudioFile.objects.create(
+                    track=new_track,
+                    format=temp_path.split('.')[-1] if '.' in temp_path else 'unknown',
+                    storage_path=temp_path
+                )
+                
+                # Get or create default artist
+                default_artist, _ = Artist.objects.get_or_create(
+                    name='Unknown Artist',
+                    type='solo'
+                )
+                
+                # Get or create default album
+                default_album, _ = Album.objects.get_or_create(
+                    title='Unknown Album'
+                )
+                
+                # Link track to album
+                new_track.album = default_album
+                new_track.save()
             
-            # Use bulk insertion for fingerprints
-            djv.db.insert_hashes(sid, hashes)
+            # Insert fingerprints directly for this track
+            fingerprint_objects = []
+            for hash_value, offset in hashes:
+                fingerprint_objects.append(Fingerprint(
+                    track_id=track_id,
+                    hash=hash_value,
+                    offset=offset
+                ))
+            
+            # Use bulk_create for efficiency
+            Fingerprint.objects.bulk_create(fingerprint_objects, batch_size=1000)
             
             # Verify fingerprints were saved
-            fingerprint_count = Fingerprint.objects.filter(song_id=sid).count()
+            fingerprint_count = Fingerprint.objects.filter(track_id=track_id).count()
             response_data = {
-                'message': f'Successfully fingerprinted {song_name}',
+                'message': f'Successfully fingerprinted {track_title}',
                 'hash_count': len(hashes),
                 'fingerprints_stored': fingerprint_count
             }

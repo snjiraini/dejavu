@@ -1,8 +1,8 @@
 # Dejavu
 
 # DEJAVU JSON RESPONSE
-SONG_ID = "song_id"
-SONG_NAME = 'song_name'
+SONG_ID = "track_id"
+SONG_NAME = 'track_title'
 RESULTS = 'results'
 
 HASHES_MATCHED = 'hashes_matched_in_input'
@@ -31,13 +31,13 @@ DATABASES = {
 }
 
 # TABLE SONGS
-SONGS_TABLENAME = "songs"
+SONGS_TABLENAME = "tracks"
 
 # SONGS FIELDS
-FIELD_SONG_ID = 'song_id'
-FIELD_SONGNAME = 'song_name'
+FIELD_SONG_ID = 'track_id'
+FIELD_SONGNAME = 'title'
 FIELD_FINGERPRINTED = "fingerprinted"
-FIELD_FILE_SHA1 = 'file_sha1'
+FIELD_FILE_SHA1 = 'file_hash'
 FIELD_TOTAL_HASHES = 'total_hashes'
 
 # TABLE FINGERPRINTS
