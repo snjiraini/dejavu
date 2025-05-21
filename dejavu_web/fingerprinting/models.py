@@ -1,5 +1,44 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 import uuid
+
+# User and Role Models
+class Role(models.Model):
+    """Custom roles for the system"""
+    ROLE_CHOICES = [
+        ('catalog_admin', 'Catalog Administrator'),
+        ('rights_holder', 'Rights Holder'),
+        ('radio_monitor', 'Radio Monitor'),
+        ('developer', 'Developer/Engineer'),
+        ('analyst', 'Business Analyst'),
+        ('artist', 'Artist'),
+        ('label', 'Label'),
+        ('superuser', 'Super User'),
+    ]
+    
+    name = models.CharField(max_length=20, choices=ROLE_CHOICES, unique=True)
+    description = models.TextField(blank=True)
+    
+    def __str__(self):
+        return self.get_name_display()
+    
+    class Meta:
+        db_table = 'roles'
+
+class User(AbstractUser):
+    """Extended user model with custom roles"""
+    roles = models.ManyToManyField(Role, related_name='users', blank=True)
+    bio = models.TextField(blank=True)
+    
+    # For artists/labels
+    associated_artist = models.ForeignKey('Artist', null=True, blank=True, on_delete=models.SET_NULL, related_name='user_profiles')
+    
+    def has_role(self, role_name):
+        """Check if user has a specific role"""
+        return self.roles.filter(name=role_name).exists() or self.is_superuser
+    
+    class Meta:
+        db_table = 'users'
 
 # Create your models here.
 
