@@ -6,7 +6,6 @@ import os
 import json
 from dejavu import Dejavu
 from dejavu.logic.recognizer.file_recognizer import FileRecognizer
-from dejavu.logic.recognizer.microphone_recognizer import MicrophoneRecognizer
 from .models import Track, Fingerprint, Artist, Album, AudioFile
 from dejavu.config.settings import (
     DEFAULT_FAN_VALUE,
