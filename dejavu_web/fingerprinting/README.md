@@ -84,3 +84,15 @@ The key tables are:
 - `audio_files`: Storage metadata
 - `radio_stations`: Radio station information
 - `radio_airplay_logs`: Track plays detection
+
+User credentials summary:
+Admin: username=admin, password=testpassword123
+catalog_admin: username=catalog_admin, password=testpassword123
+rights_holder: username=rights_holder, password=testpassword123
+radio_monitor: username=radio_monitor, password=testpassword123
+developer: username=developer, password=testpassword123
+analyst: username=analyst, password=testpassword123
+artist: username=artist, password=testpassword123
+label: username=label, password=testpassword123
+superuser: username=superuser, password=testpassword123
+Multi-role user: username=multi_role, password=testpassword123
