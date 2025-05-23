@@ -1,120 +1,182 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { Card } from "@/components/Card";
-import { UserRole } from "@/types";
+import React, { useEffect } from "react";
+import { Layout } from "@/components/Layout";
+import { BoxInfo, TableData, TodoItem } from "@/components/Card";
+import { DownloadButton } from "@/components/Button";
+import { initAdminHub } from "@/utils/adminHub";
 
-export default function DashboardPage() {
-  const { user, hasPermission } = useAuth();
-  const [stats, setStats] = useState({
-    tracks: 0,
-    artists: 0,
-    albums: 0,
-    airplays: 0,
-  });
-
+export default function Dashboard() {
+  // Initialize AdminHub functionality
   useEffect(() => {
-    // In a real app, we would fetch actual stats from the API
-    // This is just mock data for demonstration
-    setStats({
-      tracks: 1248,
-      artists: 387,
-      albums: 524,
-      airplays: 34567,
-    });
+    initAdminHub();
   }, []);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-medium mb-4">Welcome, {user?.username}!</h2>
-        <p className="text-gray-600">
-          You are logged in as a{" "}
-          <span className="font-medium">{user?.role.replace("_", " ")}</span>
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {hasPermission([
-          UserRole.CATALOG_ADMIN,
-          UserRole.RIGHTS_HOLDER,
-          UserRole.ARTIST,
-        ]) && (
-          <Card className="p-4">
-            <h3 className="text-lg font-medium mb-2">Tracks</h3>
-            <p className="text-3xl font-bold text-primary-600">
-              {stats.tracks}
-            </p>
-          </Card>
-        )}
-
-        {hasPermission([UserRole.CATALOG_ADMIN, UserRole.RIGHTS_HOLDER]) && (
-          <Card className="p-4">
-            <h3 className="text-lg font-medium mb-2">Artists</h3>
-            <p className="text-3xl font-bold text-primary-600">
-              {stats.artists}
-            </p>
-          </Card>
-        )}
-
-        {hasPermission([
-          UserRole.CATALOG_ADMIN,
-          UserRole.RIGHTS_HOLDER,
-          UserRole.ARTIST,
-        ]) && (
-          <Card className="p-4">
-            <h3 className="text-lg font-medium mb-2">Albums</h3>
-            <p className="text-3xl font-bold text-primary-600">
-              {stats.albums}
-            </p>
-          </Card>
-        )}
-
-        {hasPermission([
-          UserRole.RADIO_MONITOR,
-          UserRole.BUSINESS_ANALYST,
-          UserRole.RIGHTS_HOLDER,
-        ]) && (
-          <Card className="p-4">
-            <h3 className="text-lg font-medium mb-2">Airplays</h3>
-            <p className="text-3xl font-bold text-primary-600">
-              {stats.airplays}
-            </p>
-          </Card>
-        )}
-      </div>
-
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {hasPermission([UserRole.CATALOG_ADMIN]) && (
-            <Card className="p-4 hover:bg-gray-50 cursor-pointer">
-              <h3 className="text-lg font-medium">Add New Track</h3>
-              <p className="text-gray-600">Upload and catalog a new track</p>
-            </Card>
-          )}
-
-          {hasPermission([UserRole.RADIO_MONITOR]) && (
-            <Card className="p-4 hover:bg-gray-50 cursor-pointer">
-              <h3 className="text-lg font-medium">Monitor Station</h3>
-              <p className="text-gray-600">Start monitoring a radio station</p>
-            </Card>
-          )}
-
-          {hasPermission([
-            UserRole.BUSINESS_ANALYST,
-            UserRole.RIGHTS_HOLDER,
-          ]) && (
-            <Card className="p-4 hover:bg-gray-50 cursor-pointer">
-              <h3 className="text-lg font-medium">Generate Report</h3>
-              <p className="text-gray-600">Create a custom airplay report</p>
-            </Card>
-          )}
+    <Layout title="Dashboard | Dejavu Music Monitoring">
+      {/* Head Title */}
+      <div className="flex items-center justify-between flex-wrap gap-4 mb-9">
+        <div className="left">
+          <h1 className="text-4xl font-semibold mb-2.5">Dashboard</h1>
+          <ul className="flex items-center gap-4">
+            <li>
+              <a href="#" className="text-dark">
+                Dashboard
+              </a>
+            </li>
+            <li>
+              <i className="bx bx-chevron-right"></i>
+            </li>
+            <li>
+              <a href="#" className="text-blue">
+                Home
+              </a>
+            </li>
+          </ul>
         </div>
+        <DownloadButton>Get PDF</DownloadButton>
       </div>
-    </div>
+
+      {/* Box Info */}
+      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-9">
+        <BoxInfo
+          icon="bxs-calendar-check"
+          iconColor="text-blue"
+          iconBg="bg-light-blue"
+          title="New Tracks"
+          value={1020}
+        />
+        <BoxInfo
+          icon="bxs-group"
+          iconColor="text-yellow"
+          iconBg="bg-light-yellow"
+          title="Artists"
+          value={2834}
+        />
+        <BoxInfo
+          icon="bxs-dollar-circle"
+          iconColor="text-orange"
+          iconBg="bg-light-orange"
+          title="Total Revenue"
+          value="N$2543.00"
+        />
+      </ul>
+
+      {/* Table Data */}
+      <div className="flex flex-wrap gap-6 mt-6">
+        {/* Recent Tracks */}
+        <TableData
+          title="Recent Tracks"
+          className="flex-grow flex-basis-[500px]"
+          actions={
+            <div className="flex gap-2">
+              <i className="bx bx-search text-xl cursor-pointer"></i>
+              <i className="bx bx-filter text-xl cursor-pointer"></i>
+            </div>
+          }
+        >
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className="pb-3 text-left text-sm border-b border-grey">
+                  Track
+                </th>
+                <th className="pb-3 text-left text-sm border-b border-grey">
+                  Date Added
+                </th>
+                <th className="pb-3 text-left text-sm border-b border-grey">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="hover:bg-grey">
+                <td className="py-4 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-blue flex items-center justify-center text-light">
+                    M
+                  </div>
+                  <p>Midnight Blues</p>
+                </td>
+                <td className="py-4">18-10-2023</td>
+                <td className="py-4">
+                  <span className="status status-completed">Approved</span>
+                </td>
+              </tr>
+              <tr className="hover:bg-grey">
+                <td className="py-4 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-tertiary-500 flex items-center justify-center text-light">
+                    S
+                  </div>
+                  <p>Summer Vibes</p>
+                </td>
+                <td className="py-4">01-06-2023</td>
+                <td className="py-4">
+                  <span className="status status-pending">Pending</span>
+                </td>
+              </tr>
+              <tr className="hover:bg-grey">
+                <td className="py-4 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-secondary-500 flex items-center justify-center text-light">
+                    D
+                  </div>
+                  <p>Desert Rose</p>
+                </td>
+                <td className="py-4">14-10-2023</td>
+                <td className="py-4">
+                  <span className="status status-process">Processing</span>
+                </td>
+              </tr>
+              <tr className="hover:bg-grey">
+                <td className="py-4 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-primary-500 flex items-center justify-center text-dark">
+                    R
+                  </div>
+                  <p>Rainy Day</p>
+                </td>
+                <td className="py-4">01-02-2023</td>
+                <td className="py-4">
+                  <span className="status status-pending">Pending</span>
+                </td>
+              </tr>
+              <tr className="hover:bg-grey">
+                <td className="py-4 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-blue flex items-center justify-center text-light">
+                    C
+                  </div>
+                  <p>City Lights</p>
+                </td>
+                <td className="py-4">31-10-2023</td>
+                <td className="py-4">
+                  <span className="status status-completed">Approved</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </TableData>
+
+        {/* Todo List */}
+        <TableData
+          title="Todos"
+          className="flex-grow flex-basis-[300px]"
+          actions={
+            <div className="flex gap-2">
+              <i className="bx bx-plus text-xl cursor-pointer"></i>
+              <i className="bx bx-filter text-xl cursor-pointer"></i>
+            </div>
+          }
+        >
+          <ul className="todo-list w-full">
+            <TodoItem text="Check new track submissions" completed={true} />
+            <TodoItem text="Review artist applications" completed={true} />
+            <TodoItem
+              text="Contact radio stations for playlist updates"
+              completed={false}
+            />
+            <TodoItem text="Update music catalog" completed={true} />
+            <TodoItem text="Analyze monthly revenue" completed={false} />
+          </ul>
+        </TableData>
+      </div>
+    </Layout>
   );
 }

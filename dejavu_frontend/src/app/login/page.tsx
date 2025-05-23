@@ -36,64 +36,68 @@ export default function LoginPage() {
       <Head>
         <title>Login | Dejavu Music Monitoring</title>
       </Head>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
-            <h1 className="text-center text-3xl font-extrabold text-gray-900">
+            <h1 className="text-center text-3xl font-bold text-secondary-500">
               Dejavu Music Monitoring
             </h1>
-            <h2 className="mt-6 text-center text-xl font-bold text-gray-900">
+            <h2 className="mt-6 text-center text-xl font-medium text-text-primary">
               Sign in to your account
             </h2>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div className="mb-4">
-                <Input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  placeholder="Username"
-                  label="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  fullWidth
-                />
+          <div className="mt-8 bg-bg-secondary shadow-soft-lg rounded-lg p-8 border border-[#444444]">
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div className="space-y-4">
+                <div>
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    autoComplete="username"
+                    required
+                    placeholder="Username"
+                    label="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    fullWidth
+                  />
+                </div>
+                <div>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    placeholder="Password"
+                    label="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    fullWidth
+                  />
+                </div>
               </div>
+
+              {error && (
+                <div className="text-secondary-500 text-sm text-center">
+                  {error}
+                </div>
+              )}
+
               <div>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  placeholder="Password"
-                  label="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  fullWidth
-                />
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  size="lg"
+                  isLoading={isLoading}
+                  className="w-full"
+                >
+                  Sign in
+                </Button>
               </div>
-            </div>
-
-            {error && (
-              <div className="text-red-500 text-sm text-center">{error}</div>
-            )}
-
-            <div>
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                isLoading={isLoading}
-                className="w-full"
-              >
-                Sign in
-              </Button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </>

@@ -1,30 +1,95 @@
 @import "inter-ui/inter.css";
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Primary color palette */
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
-  --color-primary-950: #082f49;
+  /* AdminHub colors */
+  --color-light: #f9f9f9;
+  --color-blue: #3c91e6;
+  --color-light-blue: #cfe8ff;
+  --color-grey: #eee;
+  --color-dark-grey: #aaaaaa;
+  --color-dark: #342e37;
+  --color-red: #db504a;
+  --color-yellow: #ffce26;
+  --color-light-yellow: #fff2c6;
+  --color-orange: #fd7238;
+  --color-light-orange: #ffe0d3;
+
+  /* Primary colors (keep existing for compatibility) */
+  --color-primary-50: #fff7e6;
+  --color-primary-100: #ffedcc;
+  --color-primary-200: #ffdb99;
+  --color-primary-300: #ffc966;
+  --color-primary-400: #ffb733;
+  --color-primary-500: #ffd119;
+  --color-primary-600: #e6bc17;
+  --color-primary-700: #cca514;
+  --color-primary-800: #b38e11;
+  --color-primary-900: #99780f;
+
+  /* Secondary colors */
+  --color-secondary-50: #ffeae6;
+  --color-secondary-100: #ffd5cc;
+  --color-secondary-200: #ffaa99;
+  --color-secondary-300: #ff8066;
+  --color-secondary-400: #ff5533;
+  --color-secondary-500: #f4522b;
+  --color-secondary-600: #e64a27;
+  --color-secondary-700: #cc4223;
+  --color-secondary-800: #b3391e;
+  --color-secondary-900: #99311a;
+
+  /* Tertiary colors */
+  --color-tertiary-50: #fff4e6;
+  --color-tertiary-100: #ffe9cc;
+  --color-tertiary-200: #ffd299;
+  --color-tertiary-300: #ffbc66;
+  --color-tertiary-400: #ffa533;
+  --color-tertiary-500: #fd8c00;
+  --color-tertiary-600: #e67e00;
+  --color-tertiary-700: #cc7000;
+  --color-tertiary-800: #b36200;
+  --color-tertiary-900: #995300;
+
+  /* Background colors (updated to match AdminHub) */
+  --color-bg-primary: var(--color-grey);
+  --color-bg-secondary: var(--color-light);
+  --color-bg-tertiary: var(--color-dark);
+
+  /* Text colors */
+  --color-text-primary: var(--color-dark);
+  --color-text-secondary: var(--color-dark-grey);
+  --color-text-tertiary: var(--color-dark-grey);
+  --color-text-accent: var(--color-blue);
+}
+
+body.dark {
+  --color-light: #0c0c1e;
+  --color-grey: #060714;
+  --color-dark: #fbfbfb;
+
+  /* Update background colors for dark mode */
+  --color-bg-primary: var(--color-grey);
+  --color-bg-secondary: var(--color-light);
+  --color-bg-tertiary: var(--color-dark);
+
+  /* Update text colors for dark mode */
+  --color-text-primary: var(--color-light);
+  --color-text-secondary: var(--color-light);
+  --color-text-tertiary: var(--color-dark-grey);
 }
 
 @layer base {
   body {
-    @apply text-gray-800 bg-gray-50;
-    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-      Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
-      sans-serif;
+    @apply bg-bg-primary text-text-primary;
+    font-family: "Lato", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 
   h1,
@@ -33,47 +98,136 @@
   h4,
   h5,
   h6 {
-    @apply font-medium;
+    @apply font-medium text-text-primary font-poppins;
+  }
+
+  a {
+    @apply text-blue hover:text-blue transition-colors no-underline;
+  }
+
+  li {
+    @apply list-none;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium transition-colors focus:outline-none;
+  }
+
+  .btn-primary {
+    @apply bg-blue text-light hover:opacity-90;
+  }
+
+  .btn-secondary {
+    @apply bg-red text-light hover:opacity-90;
+  }
+
+  .btn-tertiary {
+    @apply bg-orange text-light hover:opacity-90;
+  }
+
+  .input {
+    @apply rounded-xl border border-grey bg-light px-3 py-2 text-sm focus:border-blue focus:outline-none focus:ring-1 focus:ring-blue text-dark placeholder-dark-grey;
+  }
+
+  .card {
+    @apply rounded-xl bg-light p-6 shadow border border-grey;
+  }
+
+  .status {
+    @apply text-xs px-4 py-1 rounded-xl text-light font-bold;
+  }
+
+  .status-completed {
+    @apply bg-blue;
+  }
+
+  .status-process {
+    @apply bg-yellow;
+  }
+
+  .status-pending {
+    @apply bg-orange;
+  }
+
+  .box-info-item {
+    @apply p-6 bg-light rounded-xl flex items-center gap-6;
+  }
+
+  .box-info-icon {
+    @apply w-20 h-20 rounded-xl text-4xl flex justify-center items-center;
+  }
+
+  /* Notification Menu */
+  .notification-menu {
+    @apply hidden absolute top-14 right-0 bg-light shadow-md rounded-xl w-64 max-h-[300px] overflow-y-auto z-50;
+  }
+
+  .notification-menu.show {
+    @apply block;
+  }
+
+  .notification-menu ul {
+    @apply list-none p-2.5 m-0;
+  }
+
+  .notification-menu li {
+    @apply p-2.5 border-b border-grey text-dark hover:bg-light-blue;
+  }
+
+  /* Profile Menu */
+  .profile-menu {
+    @apply hidden absolute top-14 right-0 bg-light shadow-md rounded-xl w-48 z-50;
+  }
+
+  .profile-menu.show {
+    @apply block;
+  }
+
+  .profile-menu ul {
+    @apply list-none p-2.5 m-0;
+  }
+
+  .profile-menu li {
+    @apply p-2.5 border-b border-grey;
+  }
+
+  .profile-menu li:hover {
+    @apply bg-light-blue;
+  }
+
+  .profile-menu li a {
+    @apply text-dark text-base;
+  }
+
+  /* Sidebar Active State */
+  #sidebar .side-menu li.active::before {
+    @apply content-[''] absolute w-10 h-10 rounded-full -top-10 right-0 shadow-[5px_5px_0_var(--color-grey)];
+    z-index: -1;
+  }
+
+  #sidebar .side-menu li.active::after {
+    @apply content-[''] absolute w-10 h-10 rounded-full -bottom-10 right-0 shadow-[5px_-5px_0_var(--color-grey)];
+    z-index: -1;
   }
 }
 
 /* Custom shadow classes */
 .shadow-soft {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 .shadow-soft-sm {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 .shadow-soft-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
-    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+    0 2px 4px -1px rgba(0, 0, 0, 0.1);
 }
 
 .shadow-soft-lg {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05),
-    0 4px 6px -2px rgba(0, 0, 0, 0.03);
-}
-
-@layer components {
-  .btn {
-    @apply flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
-  }
-
-  .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700;
-  }
-
-  .btn-secondary {
-    @apply bg-gray-100 text-gray-800 hover:bg-gray-200;
-  }
-
-  .input {
-    @apply rounded-md border border-gray-300 px-3 py-2 text-sm shadow-soft-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500;
-  }
-
-  .card {
-    @apply rounded-lg bg-white p-6 shadow-soft;
-  }
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2),
+    0 4px 6px -2px rgba(0, 0, 0, 0.1);
 }
