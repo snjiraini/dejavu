@@ -67,21 +67,6 @@
   --color-text-accent: var(--color-blue);
 }
 
-body.dark {
-  --color-light: #0c0c1e;
-  --color-grey: #060714;
-  --color-dark: #fbfbfb;
-
-  /* Update background colors for dark mode */
-  --color-bg-primary: var(--color-grey);
-  --color-bg-secondary: var(--color-light);
-  --color-bg-tertiary: var(--color-dark);
-
-  /* Update text colors for dark mode */
-  --color-text-primary: var(--color-light);
-  --color-text-secondary: var(--color-light);
-  --color-text-tertiary: var(--color-dark-grey);
-}
 
 @layer base {
   body {

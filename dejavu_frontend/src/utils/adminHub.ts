@@ -24,15 +24,6 @@ export const adjustSidebar = (sidebarId: string = "sidebar"): void => {
   }
 };
 
-// Toggle dark mode
-export const toggleDarkMode = (): void => {
-  document.body.classList.toggle("dark");
-
-  // Save dark mode preference to localStorage
-  const isDarkMode = document.body.classList.contains("dark");
-  localStorage.setItem("darkMode", isDarkMode ? "true" : "false");
-};
-
 // Toggle notification menu
 export const toggleNotificationMenu = (): void => {
   const notificationMenu = document.querySelector(".notification-menu");
@@ -80,30 +71,13 @@ export const setupOutsideClickHandler = (): void => {
   });
 };
 
-// Initialize dark mode based on saved preference
-export const initDarkMode = (): void => {
-  const savedDarkMode = localStorage.getItem("darkMode") === "true";
-  if (savedDarkMode) {
-    document.body.classList.add("dark");
-  } else {
-    document.body.classList.remove("dark");
-  }
-};
-
 // Initialize AdminHub functionality
 export const initAdminHub = (): void => {
   window.addEventListener("load", () => {
     adjustSidebar();
-    initDarkMode();
   });
   window.addEventListener("resize", () => adjustSidebar());
 
   // Setup menu handlers
   setupOutsideClickHandler();
-
-  // Setup dark mode toggle
-  const switchMode = document.getElementById("switch-mode");
-  if (switchMode) {
-    switchMode.addEventListener("change", toggleDarkMode);
-  }
 };
