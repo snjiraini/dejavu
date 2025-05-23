@@ -60,4 +60,43 @@ sudo pip install MySQL-python
 sudo ln -s /usr/local/mysql/lib/libmysqlclient.18.dylib /usr/lib/libmysqlclient.18.dylib
 ```
 
-However installing `portaudio` and/or `ffmpeg` from source is also doable. 
+However installing `portaudio` and/or `ffmpeg` from source is also doable.
+
+## Web Application & API Browser
+
+The Django web application includes a browsable API documentation interface that makes it easy to explore all available endpoints.
+
+### Installation of API Browser
+
+The API browser requires the `drf-yasg` package (Django REST Framework Yet Another Swagger Generator). To install it:
+
+```bash
+pip install drf-yasg
+```
+
+### Additional Web Application Dependencies 
+
+If you're setting up the web application component, you'll need these additional packages:
+
+```bash
+# Core framework and REST API
+pip install Django>=3.2.10,<4.0
+pip install djangorestframework>=3.12.0,<4.0
+pip install djangorestframework-simplejwt>=5.0.0,<6.0
+pip install django-cors-headers>=3.10.0,<4.0
+pip install drf-yasg>=1.21.0
+
+# Other utilities
+pip install requests>=2.25.0
+pip install Pillow>=8.0.0
+```
+
+### Accessing the API Browser
+
+Once the web application is running, you can access:
+
+- **Main documentation**: Visit the root URL `/` to see the API overview
+- **Swagger UI**: Interactive documentation at `/swagger/`
+- **ReDoc**: Alternative documentation view at `/redoc/`
+
+This makes it easy to explore all the available endpoints, test API calls directly from your browser, and understand the request/response formats.

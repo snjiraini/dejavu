@@ -9,9 +9,11 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from .api_docs import login_docs
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_docs
 def login_user(request):
     """API endpoint for user login"""
     data = json.loads(request.body)

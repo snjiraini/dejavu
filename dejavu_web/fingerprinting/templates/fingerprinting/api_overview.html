@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dejavu Audio Fingerprinting API</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-top: 40px;
+        }
+        h2 {
+            color: #3498db;
+            margin-top: 30px;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+            text-decoration: none;
+        }
+        .api-section {
+            margin-bottom: 30px;
+            border: 1px solid #eee;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .api-endpoints {
+            margin-left: 20px;
+        }
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dejavu Audio Fingerprinting API</h1>
+    <p>Welcome to the Dejavu API documentation. This interface provides a browsable list of all available API endpoints in the system.</p>
+    
+    <div>
+        <a href="/swagger/" class="btn">Swagger UI (Interactive)</a>
+        <a href="/redoc/" class="btn">ReDoc (Documentation)</a>
+    </div>
+    
+    <h2>API Overview</h2>
+    <p>The Dejavu API is organized into the following sections:</p>
+    
+    <div class="api-section">
+        <h3>Authentication</h3>
+        <p>Authentication endpoints for user login, registration, and token management.</p>
+        <div class="api-endpoints">
+            <p><code>POST /fingerprinting/api/auth/login/</code> - Log in and get access tokens</p>
+            <p><code>POST /fingerprinting/api/auth/logout/</code> - Log out and invalidate tokens</p>
+            <p><code>GET /fingerprinting/api/auth/me/</code> - Get current user information</p>
+        </div>
+    </div>
+    
+    <div class="api-section">
+        <h3>Music Catalog</h3>
+        <p>Endpoints for managing tracks, albums, and artists in your music library.</p>
+        <div class="api-endpoints">
+            <p><code>GET /fingerprinting/api/catalog/tracks/</code> - List all tracks</p>
+            <p><code>GET /fingerprinting/api/catalog/albums/</code> - List all albums</p>
+            <p><code>GET /fingerprinting/api/catalog/artists/</code> - List all artists</p>
+        </div>
+    </div>
+    
+    <div class="api-section">
+        <h3>Fingerprinting & Recognition</h3>
+        <p>Core functionality for fingerprinting audio files and recognizing unknown audio.</p>
+        <div class="api-endpoints">
+            <p><code>POST /fingerprinting/fingerprint/</code> - Fingerprint an audio file</p>
+            <p><code>POST /fingerprinting/recognize/</code> - Recognize an audio file</p>
+        </div>
+    </div>
+    
+    <div class="api-section">
+        <h3>Monitoring</h3>
+        <p>Endpoints for monitoring radio airplay and logging play events.</p>
+        <div class="api-endpoints">
+            <p><code>GET /fingerprinting/api/monitoring/airplay-logs/</code> - List all airplay logs</p>
+            <p><code>GET /fingerprinting/api/monitoring/stations/</code> - List all stations</p>
+        </div>
+    </div>
+    
+    <h2>Getting Started</h2>
+    <p>To explore all API endpoints interactively, use the <a href="/swagger/">Swagger UI</a>, which allows you to:</p>
+    <ul>
+        <li>View detailed documentation for each endpoint</li>
+        <li>Test API calls directly from your browser</li>
+        <li>Understand request/response formats</li>
+    </ul>
+    
+    <p>For a more documentation-focused view, try <a href="/redoc/">ReDoc</a>, which provides a clean, responsive interface for API documentation.</p>
+    
+    <footer>
+        <hr>
+        <p>&copy; 2025 Dejavu Audio Fingerprinting System</p>
+    </footer>
+</body>
+</html>

@@ -4,11 +4,13 @@ from django.views.decorators.http import require_http_methods
 import json
 from .models import RadioStation, RadioAirplayLog, Track, TrackArtist
 from .decorators import role_required
+from .api_docs import airplay_logs_docs
 from django.db.models import Count, Sum
 from datetime import datetime, timedelta
 
 @csrf_exempt
 @role_required(['radio_monitor', 'business_analyst', 'rights_holder', 'artist', 'label', 'superuser'])
+@airplay_logs_docs
 def airplay_logs(request):
     """Get radio airplay logs with filtering"""
     # Default to last 7 days

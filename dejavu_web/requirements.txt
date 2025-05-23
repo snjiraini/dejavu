@@ -9,4 +9,5 @@ pydub>=0.25.0
 PyAudio>=0.2.11
 mysqlclient>=2.0.0
 requests>=2.25.0
-Pillow>=8.0.0 
+Pillow>=8.0.0
+drf-yasg>=1.21.0  # API documentation browser 

@@ -4,11 +4,13 @@ from django.views.decorators.http import require_http_methods
 import json
 from .models import Track, Album, Artist, AudioFile, TrackArtist
 from .decorators import role_required
+from .api_docs import track_list_docs, track_detail_docs, album_list_docs, artist_list_docs
 import uuid
 
 # CRUD for Tracks
 @csrf_exempt
 @role_required(['catalog_admin', 'superuser'])
+@track_list_docs
 def track_list(request):
     """List or create tracks"""
     if request.method == 'GET':
@@ -59,6 +61,7 @@ def track_list(request):
 
 @csrf_exempt
 @role_required(['catalog_admin', 'superuser'])
+@track_detail_docs
 def track_detail(request, track_id):
     """Retrieve, update or delete a track"""
     try:
@@ -143,6 +146,7 @@ def track_detail(request, track_id):
 # CRUD for Albums
 @csrf_exempt
 @role_required(['catalog_admin', 'superuser'])
+@album_list_docs
 def album_list(request):
     """List or create albums"""
     if request.method == 'GET':
@@ -218,6 +222,7 @@ def album_detail(request, album_id):
 # CRUD for Artists
 @csrf_exempt
 @role_required(['catalog_admin', 'superuser'])
+@artist_list_docs
 def artist_list(request):
     """List or create artists"""
     if request.method == 'GET':

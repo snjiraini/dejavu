@@ -35,6 +35,44 @@ This guide explains how to migrate to the new comprehensive music catalog schema
    - Link tracks to default entities
    - Set up track-artist relationships
 
+## API Browser
+
+The system includes a browsable API documentation interface to help developers understand and interact with all available endpoints.
+
+### Features
+
+- **Interactive API documentation**: Browse and test API endpoints from your browser
+- **Categorized endpoints**: API endpoints are organized by functional area:
+  - Authentication
+  - Music Catalog
+  - Fingerprinting & Recognition
+  - Monitoring
+- **Swagger and ReDoc UI**: Multiple documentation interfaces available
+  
+### Accessing the API Browser
+
+- **Main Documentation**: Visit `/` (root URL) to see the API overview page
+- **Swagger UI**: Visit `/swagger/` for the interactive Swagger documentation
+- **ReDoc**: Visit `/redoc/` for an alternative documentation view
+
+### Installation
+
+The API Browser is powered by `drf-yasg` (Django REST Framework Yet Another Swagger Generator). It's included in the requirements.txt file, but if you need to install it manually:
+
+```bash
+pip install drf-yasg
+```
+
+Add 'drf_yasg' to your INSTALLED_APPS in settings.py:
+
+```python
+INSTALLED_APPS = [
+    # ...
+    'drf_yasg',
+    # ...
+]
+```
+
 ## About the New Schema
 
 The new schema provides a comprehensive music catalog with:

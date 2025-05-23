@@ -14,6 +14,7 @@ from dejavu.config.settings import (
     PEAK_SORT,
     CONNECTIVITY_MASK
 )
+from .api_docs import recognize_audio_docs, fingerprint_song_docs
 
 def index(request):
     return render(request, 'fingerprinting/index.html')
@@ -31,8 +32,10 @@ def clean_for_json(obj):
     elif str(type(obj)).startswith("<class 'numpy."):  # Fallback for NumPy types
         return int(obj) if hasattr(obj, '__int__') else float(obj) if hasattr(obj, '__float__') else str(obj)
     return obj
+    return obj
 
 @csrf_exempt
+@recognize_audio_docs
 def recognize_audio(request):
     if request.method == 'POST' and request.FILES.get('audio_file'):
         audio_file = request.FILES['audio_file']

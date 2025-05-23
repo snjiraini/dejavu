@@ -14,11 +14,51 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from fingerprinting.api_tags import TAG_DESCRIPTIONS
+
+# Create a schema view for Swagger documentation
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Dejavu Audio Fingerprinting API",
+        default_version='v1',
+        description="""
+        API for audio fingerprinting and recognition. 
+        This system allows you to:
+        
+        * Fingerprint audio files and add them to the database
+        * Recognize unknown audio by matching against existing fingerprints
+        * Manage your music catalog (tracks, albums, artists)
+        * Monitor radio airplay and track plays
+        
+        For more information, visit the project documentation.
+        """,
+        terms_of_service="https://www.example.com/terms/",
+        contact=openapi.Contact(email="contact@example.com"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+    patterns=[
+        path('fingerprinting/api/', include('fingerprinting.urls')),
+    ],
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('fingerprinting.urls')),
+    # API documentation endpoints with a custom landing page
+    path('', RedirectView.as_view(url='/api-overview/', permanent=False), name='index'),
+    path('api-overview/', include('fingerprinting.urls_docs')),
+    path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    # Include app URLs
+    path('fingerprinting/', include('fingerprinting.urls')),
+    path('api/', include('rest_framework.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

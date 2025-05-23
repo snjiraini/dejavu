@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'fingerprinting',
+    'django_extensions',  # Optional: for development purposes
+    'drf_yasg',  # API documentation
 ]
 
 MIDDLEWARE = [

@@ -332,3 +332,34 @@ For the 45 songs I fingerprinted, the database used 377 MB of space for 5.4 mill
 | fingerprints           | 377           |
 
 There's a pretty direct trade-off between the necessary record time and the amount of storage needed. Adjusting the amplitude threshold for peaks and the fan value for fingerprinting will add more fingerprints and bolster the accuracy at the expense of more space.
+
+## Web Application & API Browser
+
+The Django web application component of this project (`dejavu_web`) includes a browsable API documentation interface. This makes it easy to explore and interact with all available API endpoints.
+
+### Key Features of the API Browser
+
+- **Interactive API Documentation**: Browse and test API endpoints directly from your browser
+- **Categorized Endpoints**: API endpoints are organized by functional areas:
+  - Authentication
+  - Music Catalog
+  - Fingerprinting & Recognition 
+  - Monitoring
+
+### How to Access
+
+Once the web application is running, you can access:
+
+- **Main Documentation**: Visit the root URL `/` for an API overview
+- **Swagger UI**: Interactive documentation at `/swagger/`
+- **ReDoc**: Alternative documentation view at `/redoc/`
+
+### Installation
+
+The API browser requires the `drf-yasg` package. See the [INSTALLATION.md](INSTALLATION.md) file for detailed installation instructions and additional dependencies for the web application.
+
+```bash
+pip install drf-yasg
+```
+
+Make sure to add `'drf_yasg'` to your `INSTALLED_APPS` in the Django settings.
