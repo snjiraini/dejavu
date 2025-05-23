@@ -85,11 +85,13 @@ export const Layout: React.FC<LayoutProps> = ({
           } transition-all duration-300`}
         >
           {/* Toggle sidebar button */}
-          <div className="px-6 py-3">
+          <div className="px-6 py-3 flex justify-between items-center">
             <i
               className="bx bx-menu bx-sm cursor-pointer text-dark hover:bg-grey p-1.5 rounded-md transition-colors"
               onClick={toggleSidebar}
             ></i>
+
+            {/* Theme toggle button removed from here */}
           </div>
 
           {/* Main content */}

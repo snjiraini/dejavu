@@ -3,8 +3,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { Input } from "@/components/Input";
-import { Button } from "@/components/Button";
+import { ThemeCard } from "@/components/ThemeCard";
+import { ThemeInput } from "@/components/ThemeInput";
+import { ThemeButton } from "@/components/ThemeButton";
+import { ThemeHeading } from "@/components/ThemeHeading";
+import { useTheme } from "@/context/ThemeContext";
 import Head from "next/head";
 
 export default function LoginPage() {
@@ -12,6 +15,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { isDarkMode, toggleTheme, mounted } = useTheme();
 
   const { login } = useAuth();
   const router = useRouter();
@@ -38,43 +42,62 @@ export default function LoginPage() {
       </Head>
       <div className="min-h-screen flex items-center justify-center bg-bg-primary py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
-          <div>
-            <h1 className="text-center text-3xl font-bold text-secondary-500">
+          <div className="flex flex-col items-center">
+            <ThemeHeading as="h1" className="text-center" isGradient>
               Dejavu Music Monitoring
-            </h1>
-            <h2 className="mt-6 text-center text-xl font-medium text-text-primary">
+            </ThemeHeading>
+            <ThemeHeading as="h2" className="mt-6 text-center">
               Sign in to your account
-            </h2>
+            </ThemeHeading>
+            
+            {/* Theme toggle button added to login page */}
+            <button
+              onClick={toggleTheme}
+              className="theme-button mt-4"
+              aria-label="Toggle theme"
+            >
+              <span className="material-symbols-rounded">
+                {mounted && (isDarkMode ? "light_mode" : "dark_mode")}
+              </span>
+            </button>
           </div>
-          <div className="mt-8 bg-bg-secondary shadow-soft-lg rounded-lg p-8 border border-[#444444]">
+          <ThemeCard className="mt-8 p-8">
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
-                  <Input
+                  <label
+                    htmlFor="username"
+                    className="block text-text-secondary text-sm mb-1"
+                  >
+                    Username
+                  </label>
+                  <ThemeInput
                     id="username"
                     name="username"
                     type="text"
                     autoComplete="username"
                     required
-                    placeholder="Username"
-                    label="Username"
+                    placeholder="Enter your username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    fullWidth
                   />
                 </div>
                 <div>
-                  <Input
+                  <label
+                    htmlFor="password"
+                    className="block text-text-secondary text-sm mb-1"
+                  >
+                    Password
+                  </label>
+                  <ThemeInput
                     id="password"
                     name="password"
                     type="password"
                     autoComplete="current-password"
                     required
-                    placeholder="Password"
-                    label="Password"
+                    placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    fullWidth
                   />
                 </div>
               </div>
@@ -86,18 +109,18 @@ export default function LoginPage() {
               )}
 
               <div>
-                <Button
+                <ThemeButton
                   type="submit"
-                  variant="secondary"
-                  size="lg"
                   isLoading={isLoading}
-                  className="w-full"
+                  isFullWidth
+                  variant="text"
+                  className="text-center py-3"
                 >
                   Sign in
-                </Button>
+                </ThemeButton>
               </div>
             </form>
-          </div>
+          </ThemeCard>
         </div>
       </div>
     </>

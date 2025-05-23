@@ -5,6 +5,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Material Icons for theme toggle */
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0");
+
 :root {
   /* AdminHub colors */
   --color-light: #f9f9f9;
@@ -18,6 +21,22 @@
   --color-light-yellow: #fff2c6;
   --color-orange: #fd7238;
   --color-light-orange: #ffe0d3;
+
+  /* New theme colors - derived from colortheme.html */
+  --theme-text-color: #e3e3e3;
+  --theme-subheading-color: #828282;
+  --theme-placeholder-color: #a6a6a6;
+  --theme-primary-color: #242424;
+  --theme-secondary-color: #383838;
+  --theme-secondary-hover-color: #444;
+
+  /* Light mode theme colors */
+  --theme-light-text-color: #222;
+  --theme-light-subheading-color: #a0a0a0;
+  --theme-light-placeholder-color: #6c6c6c;
+  --theme-light-primary-color: #fff;
+  --theme-light-secondary-color: #e9eef6;
+  --theme-light-secondary-hover-color: #dbe1ea;
 
   /* Primary colors (keep existing for compatibility) */
   --color-primary-50: #fff7e6;
@@ -65,8 +84,34 @@
   --color-text-secondary: var(--color-dark-grey);
   --color-text-tertiary: var(--color-dark-grey);
   --color-text-accent: var(--color-blue);
+}  /* New theme CSS class */
+.theme-dark {
+  /* Dark theme variables */
+  --color-text-primary: var(--theme-text-color);
+  --color-text-secondary: var(--theme-subheading-color);
+  --color-text-tertiary: var(--theme-placeholder-color);
+  --color-bg-primary: var(--theme-primary-color);
+  --color-bg-secondary: var(--theme-secondary-color);
+  --color-bg-tertiary: var(--theme-secondary-hover-color);
 }
 
+.theme-light {
+  /* Light theme variables */
+  --color-text-primary: var(--theme-light-text-color);
+  --color-text-secondary: var(--theme-light-subheading-color);
+  --color-text-tertiary: var(--theme-light-placeholder-color);
+  --color-bg-primary: var(--color-grey); /* Using the same grey as sidebar active item */
+  --color-bg-secondary: var(--theme-light-secondary-color);
+  --color-bg-tertiary: var(--theme-light-secondary-hover-color);
+}
+
+/* Button gradients */
+.bg-gradient-blue {
+  background: linear-gradient(to right, #4285f4, #d96570);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
 @layer base {
   body {
@@ -195,6 +240,67 @@
   #sidebar .side-menu li.active::after {
     @apply content-[''] absolute w-10 h-10 rounded-full -bottom-10 right-0 shadow-[5px_-5px_0_var(--color-grey)];
     z-index: -1;
+  }
+
+  /* New theme components */
+  .theme-card {
+    @apply bg-bg-secondary rounded-3xl shadow-soft p-6;
+  }
+
+  /* Make sure card background is slightly off-white in dark mode so text is readable */
+  .theme-dark .theme-card {
+    @apply text-black font-medium bg-gray-100;
+  }
+  
+  /* Apply dark text to all text elements inside cards in dark mode */
+  .theme-dark .theme-card p,
+  .theme-dark .theme-card h1,
+  .theme-dark .theme-card h2,
+  .theme-dark .theme-card h3,
+  .theme-dark .theme-card h4,
+  .theme-dark .theme-card h5,
+  .theme-dark .theme-card h6,
+  .theme-dark .theme-card span,
+  .theme-dark .theme-card div {
+    @apply text-black font-medium;
+  }
+
+  .theme-input {
+    @apply h-14 w-full border-none rounded-full bg-bg-secondary text-text-primary px-6 py-3 focus:bg-bg-tertiary focus:outline-none transition-colors placeholder-text-secondary;
+  }
+
+  .theme-button {
+    @apply flex h-14 w-14 items-center justify-center rounded-full bg-bg-secondary text-text-primary hover:bg-bg-tertiary transition-colors;
+  }
+
+  .theme-button-text {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-full bg-bg-secondary text-text-primary hover:bg-bg-tertiary transition-colors;
+  }
+
+  .theme-suggestion {
+    @apply cursor-pointer p-5 w-full md:w-56 flex-shrink-0 flex flex-col items-end rounded-3xl justify-between bg-bg-secondary hover:bg-bg-tertiary transition-colors;
+  }
+
+  /* Loading bar animation for theme */
+  .theme-loading-bar {
+    @apply h-3 w-full rounded bg-bg-tertiary;
+    background-position: -800px 0;
+    background: linear-gradient(
+      to right,
+      #4285f4,
+      var(--theme-primary-color),
+      #4285f4
+    );
+    animation: loading 3s linear infinite;
+  }
+
+  @keyframes loading {
+    0% {
+      background-position: -800px 0;
+    }
+    100% {
+      background-position: 800px 0;
+    }
   }
 }
 
